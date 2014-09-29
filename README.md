@@ -16,7 +16,7 @@ Azure SQL JDBC driver is not in maven repo. To build this we need to install the
 Steps to install the Azure SQL JDBC driver in the local repo.
 
 1. Download the SQL JDBC driver from http://www.microsoft.com/en-us/download/details.aspx?id=11774
-2.  execut the maven install command
+2.  execut the maven install command <br>
 mvn install:install-file -Dfile={path to sqljdbc4.jar} -DgroupId=com.microsoft.sqlserver -DartifactId=sqljdbc4 -Dversion=4.0 -Dpackaging=jar
 
 Steps to build the extension
