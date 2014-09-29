@@ -37,9 +37,12 @@ example yml configuration
    metricPrefix: "Custom Metrics|Azure Database|"
    
    ```
-example connectionString:  "jdbc:sqlserver://gkbzse0m18.database.windows.net:1433;database=${Database_Name};user=[AdminUser]@gkbzse0m18;password=[AdminPassword];encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
-Note: Don't substitute value for ${Database_Name}, it will be picked from 'databaseName' parameter of the yml config. 
-
+<b>example connectionString</b>:  "jdbc:sqlserver://gkbzse0m18.database.windows.net:1433;database=${Database_Name};user=[AdminUser]@gkbzse0m18;password=[AdminPassword];encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" 
+<br>
+<b>Note</b>: Don't substitute value for ${Database_Name}, it will be picked from 'databaseName' parameter of the yml config.
+<br>
+<b>Note</b>: For each database configuration 2 queries will be fired to Azure. Please be careful while configuring more
+databases.
 ##Metrics
 The following metrics are reported.
 
