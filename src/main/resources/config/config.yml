@@ -1,0 +1,10 @@
+# Azure Database particulars
+
+databases:
+    -   databaseName: "[DatabaseName1]"
+        connectionString: "[JDBCConnectionString1]"
+    -   databaseName: "[DatabaseName1]"
+        connectionString: "[JDBCConnectionString2]"
+
+#prefix used to show up metrics in AppDynamics
+metricPrefix: "Custom Metrics|Azure Database|"
