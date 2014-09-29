@@ -14,7 +14,7 @@ Create database in azure and get the JDBC connection string. To get the connecti
 ##Installation
 
 1. Run "mvn clean install"
-2. Download and unzip the file 'target/AzureDatabaseMonitor.zip' to \<machineagent install dir\}/monitors
+2. Download and unzip the file 'target/AzureDatabaseMonitor.zip' to \{machineagent install dir\}/monitors
 3. Open <b>monitor.xml</b> and configure the Azure arguments
 
 <pre>
