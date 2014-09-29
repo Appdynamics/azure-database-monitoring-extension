@@ -68,7 +68,7 @@ All usage metrics are scaled to 100.
 |Azure Database/{DatabaseName}/Usage/Average Memory Usage Percent (x100)|
 
 #Custom Dashboard
-![]()
+![](https://raw.githubusercontent.com/Appdynamics/azure-database-monitoring-extension/master/AzureDatabaseMonitor.png)
 
 ##Contributing
 
