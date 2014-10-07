@@ -34,21 +34,23 @@ Steps to build the extension
 example yml configuration
    ```
    # Azure Database particulars
-   
-   databases:
-       -   databaseName: "[DatabaseName1]"
-           connectionString: "[JDBCConnectionString1]"
-       -   databaseName: "[DatabaseName2]"
-           connectionString: "[JDBCConnectionString2]"
+
+   databaseServers:
+    -   serverName: "gkbzse0m18"
+        databasePort: "1433"
+        databaseNames: [AppdTest, AppdTest2]
+        adminUser: ""
+        adminPassword: ""
+    -   serverName: "hd57z9kvth"
+        databasePort: "1433"
+        databaseNames: [TestDb2]
+        adminUser: ""
+        adminPassword: ""
    
    #prefix used to show up metrics in AppDynamics
    metricPrefix: "Custom Metrics|Azure Database|"
    
    ```
-<b>example connectionString</b>:  "jdbc:sqlserver://gkbzse0m18.database.windows.net:1433;database=${Database_Name};user=[AdminUser]@gkbzse0m18;password=[AdminPassword];encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" 
-<br>
-<b>Note</b>: Don't substitute value for ${Database_Name}, it will be picked from 'databaseName' parameter of the yml config.
-<br>
 <b>Note</b>: For each database configuration 2 queries will be fired to Azure. Please be careful while configuring more
 databases.
 ##Metrics
@@ -58,11 +60,11 @@ The following metrics are reported.
 
 | Metrics|
 |---------------- |
-|Azure Database/{DatabaseName}/Connections/Throttled Connection Count|
-|Azure Database/{DatabaseName}/Connections/Terminated Connection Count|
-|Azure Database/{DatabaseName}/Connections/Successful Count|
-|Azure Database/{DatabaseName}/Connections/Connection Failure Count|
-|Azure Database/{DatabaseName}/Connections/Total Failure Count|
+|Azure Database/{DatabaseServer}/{DatabaseName}/Connections/Throttled Connection Count|
+|Azure Database/{DatabaseServer}/{DatabaseName}/Connections/Terminated Connection Count|
+|Azure Database/{DatabaseServer}/{DatabaseName}/Connections/Successful Count|
+|Azure Database/{DatabaseServer}/{DatabaseName}/Connections/Connection Failure Count|
+|Azure Database/{DatabaseServer}/{DatabaseName}/Connections/Total Failure Count|
 
 ###Usage
 
@@ -70,10 +72,10 @@ All usage metrics are scaled to 100.
 
 | Metric Path  |
 |---------------- |
-|Azure Database/{DatabaseName}/Usage/Average CPU Utilization Percent (x100)|
-|Azure Database/{DatabaseName}/Usage/Maximum CPU Utilization Percent (x100)|
-|Azure Database/{DatabaseName}/Usage/Maximum Memory Usage Percent (x100)|
-|Azure Database/{DatabaseName}/Usage/Average Memory Usage Percent (x100)|
+|Azure Database/{DatabaseServer}/{DatabaseName}/Usage/Average CPU Utilization Percent (x100)|
+|Azure Database/{DatabaseServer}/{DatabaseName}/Usage/Maximum CPU Utilization Percent (x100)|
+|Azure Database/{DatabaseServer}/{DatabaseName}/Usage/Maximum Memory Usage Percent (x100)|
+|Azure Database/{DatabaseServer}/{DatabaseName}/Usage/Average Memory Usage Percent (x100)|
 
 #Custom Dashboard
 ![](https://raw.githubusercontent.com/Appdynamics/azure-database-monitoring-extension/master/AzureDatabaseMonitor.png)
