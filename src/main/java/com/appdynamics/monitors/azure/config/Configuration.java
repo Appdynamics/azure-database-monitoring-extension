@@ -19,15 +19,15 @@ import java.util.List;
 
 public class Configuration {
 
-    private List<Database> databases;
+    private List<DatabaseServer> databaseServers;
     private String metricPrefix;
 
-    public List<Database> getDatabases() {
-        return databases;
+    public List<DatabaseServer> getDatabaseServers() {
+        return databaseServers;
     }
 
-    public void setDatabases(List<Database> databases) {
-        this.databases = databases;
+    public void setDatabaseServers(List<DatabaseServer> databaseServers) {
+        this.databaseServers = databaseServers;
     }
 
     public String getMetricPrefix() {

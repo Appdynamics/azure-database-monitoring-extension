@@ -1,7 +1,7 @@
 package com.appdynamics.monitors.azure.statsCollector;
 
 import com.appdynamics.monitors.azure.config.Configuration;
-import com.appdynamics.monitors.azure.config.Database;
+import com.appdynamics.monitors.azure.config.DatabaseServer;
 import com.singularity.ee.agent.systemagent.api.exception.TaskExecutionException;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.log4j.Logger;
@@ -18,6 +18,7 @@ import java.util.Map;
 public class AzureDatabaseStatsCollector {
 
     private static final Logger logger = Logger.getLogger(AzureDatabaseStatsCollector.class);
+    private static final String CONNECTION_STRING = "jdbc:sqlserver://${databaseServer}.database.windows.net:${databasePort};database=${databaseName};user=${adminUser}@${databaseServer};password=${adminPassword};encrypt=true;hostNameInCertificate=*.database.windows.net;loginTimeout=30;";
 
     public static final String METRICS_SEPARATOR = "|";
 
@@ -38,39 +39,48 @@ public class AzureDatabaseStatsCollector {
     public Map<String, String> collectMetrics(Configuration config) throws TaskExecutionException {
         Map<String, String> stats = new HashMap<String, String>();
 
-        List<Database> databases = config.getDatabases();
-        if (databases == null || databases.size() <= 0) {
+        List<DatabaseServer> databaseServers = config.getDatabaseServers();
+        if (databaseServers == null || databaseServers.size() <= 0) {
             logger.error("No database(s) configured in the configuration file. Please configure databases to see metrics");
             throw new TaskExecutionException("No database(s) configured in the configuration file. Please configure databases to see metrics");
         }
 
         String metricPrefix = config.getMetricPrefix();
-        for (Database database : databases) {
-            String databaseName = database.getDatabaseName();
-            String connectionString = database.getConnectionString();
-
+        for (DatabaseServer databaseServer : databaseServers) {
+            String databaseServerName = databaseServer.getServerName();
+            String databasePort = databaseServer.getDatabasePort();
+            String adminUser = databaseServer.getAdminUser();
+            String adminPassword = databaseServer.getAdminPassword();
             Map<String, String> masterDBMap = new HashMap<String, String>();
-            masterDBMap.put("Database_Name", "master");
-            String masterConnectionString = getConnectionString(connectionString, masterDBMap);
-            Map<String, String> connectionStats = executeDBConnectionsQuery(databaseName, masterConnectionString, metricPrefix);
-            stats.putAll(connectionStats);
+            masterDBMap.put("databaseServer", databaseServerName);
+            masterDBMap.put("databasePort", databasePort);
+            masterDBMap.put("adminUser", adminUser);
+            masterDBMap.put("adminPassword", adminPassword);
 
-            Map<String, String> dbMap = new HashMap<String, String>();
-            dbMap.put("Database_Name", databaseName);
-            String dbConnectionString = getConnectionString(connectionString, dbMap);
-            Map<String, String> resourceStats = executeDBResourceQuery(databaseName, dbConnectionString, metricPrefix);
-            stats.putAll(resourceStats);
+            List<String> databaseNames = databaseServer.getDatabaseNames();
+
+            for (String databaseName : databaseNames) {
+
+                String masterConnectionString = getConnectionString(CONNECTION_STRING, masterDBMap, "master");
+                Map<String, String> connectionStats = executeDBConnectionsQuery(databaseServerName, databaseName, masterConnectionString, metricPrefix);
+                stats.putAll(connectionStats);
+
+                String dbConnectionString = getConnectionString(CONNECTION_STRING, masterDBMap, databaseName);
+                Map<String, String> resourceStats = executeDBResourceQuery(databaseServerName, databaseName, dbConnectionString, metricPrefix);
+                stats.putAll(resourceStats);
+            }
         }
         return stats;
     }
 
-    private String getConnectionString(String connectionString, Map<String, String> valueMap) {
+    private String getConnectionString(String connectionString, Map<String, String> valueMap, String databaseName) {
         StrSubstitutor strSubstitutor = new StrSubstitutor(valueMap);
+        valueMap.put("databaseName", databaseName);
         String connectionStringReplaced = strSubstitutor.replace(connectionString);
         return connectionStringReplaced;
     }
 
-    private Map<String, String> executeDBResourceQuery(String databaseName, String dbConnectionString, String metricPrefix) throws TaskExecutionException {
+    private Map<String, String> executeDBResourceQuery(String databaseServerName, String databaseName, String dbConnectionString, String metricPrefix) throws TaskExecutionException {
         Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
@@ -87,10 +97,10 @@ public class AzureDatabaseStatsCollector {
                 String maxCPUPercent = resultSet.getString(2);
                 String avgMemoryUsagePercent = resultSet.getString(3);
                 String maxMemoryUsagePercent = resultSet.getString(4);
-                connectionMetrics.put(buildMetricKey(metricPrefix + databaseName, "Usage", "Average CPU Utilization Percent (x 100)"), avgCPUPercent);
-                connectionMetrics.put(buildMetricKey(metricPrefix + databaseName, "Usage", "Maximum CPU Utilization Percent (x 100)"), maxCPUPercent);
-                connectionMetrics.put(buildMetricKey(metricPrefix + databaseName, "Usage", "Average Memory Usage Percent (x 100)"), avgMemoryUsagePercent);
-                connectionMetrics.put(buildMetricKey(metricPrefix + databaseName, "Usage", "Maximum Memory Usage Percent (x 100)"), maxMemoryUsagePercent);
+                connectionMetrics.put(buildMetricKey(metricPrefix + databaseServerName, databaseName, "Usage", "Average CPU Utilization Percent (x 100)"), avgCPUPercent);
+                connectionMetrics.put(buildMetricKey(metricPrefix + databaseServerName, databaseName, "Usage", "Maximum CPU Utilization Percent (x 100)"), maxCPUPercent);
+                connectionMetrics.put(buildMetricKey(metricPrefix + databaseServerName, databaseName, "Usage", "Average Memory Usage Percent (x 100)"), avgMemoryUsagePercent);
+                connectionMetrics.put(buildMetricKey(metricPrefix + databaseServerName, databaseName, "Usage", "Maximum Memory Usage Percent (x 100)"), maxMemoryUsagePercent);
             }
 
         } catch (ClassNotFoundException e) {
@@ -104,7 +114,7 @@ public class AzureDatabaseStatsCollector {
         return connectionMetrics;
     }
 
-    private Map<String, String> executeDBConnectionsQuery(String databaseName, String connectionString, String metricPrefix) throws TaskExecutionException {
+    private Map<String, String> executeDBConnectionsQuery(String databaseServerName, String databaseName, String connectionString, String metricPrefix) throws TaskExecutionException {
         Connection connection = null;
         Statement statement = null;
         ResultSet resultSet = null;
@@ -123,11 +133,11 @@ public class AzureDatabaseStatsCollector {
                 String connectionFailureCount = resultSet.getString("connection_failure_count");
                 String terminatedConnectionCount = resultSet.getString("terminated_connection_count");
                 String throttledConnectionCount = resultSet.getString("throttled_connection_count");
-                connectionMetrics.put(buildMetricKey(metricPrefix + databaseName, "Connections", "Successful Count"), successCount);
-                connectionMetrics.put(buildMetricKey(metricPrefix + databaseName, "Connections", "Total Failure Count"), totalFailureCount);
-                connectionMetrics.put(buildMetricKey(metricPrefix + databaseName, "Connections", "Connection Failure Count"), connectionFailureCount);
-                connectionMetrics.put(buildMetricKey(metricPrefix + databaseName, "Connections", "Terminated Connection Count"), terminatedConnectionCount);
-                connectionMetrics.put(buildMetricKey(metricPrefix + databaseName, "Connections", "Throttled Connection Count"), throttledConnectionCount);
+                connectionMetrics.put(buildMetricKey(metricPrefix + databaseServerName, databaseName, "Connections", "Successful Count"), successCount);
+                connectionMetrics.put(buildMetricKey(metricPrefix + databaseServerName, databaseName, "Connections", "Total Failure Count"), totalFailureCount);
+                connectionMetrics.put(buildMetricKey(metricPrefix + databaseServerName, databaseName, "Connections", "Connection Failure Count"), connectionFailureCount);
+                connectionMetrics.put(buildMetricKey(metricPrefix + databaseServerName, databaseName, "Connections", "Terminated Connection Count"), terminatedConnectionCount);
+                connectionMetrics.put(buildMetricKey(metricPrefix + databaseServerName, databaseName, "Connections", "Throttled Connection Count"), throttledConnectionCount);
             }
 
         } catch (ClassNotFoundException e) {

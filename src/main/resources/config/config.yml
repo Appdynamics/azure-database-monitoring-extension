@@ -1,10 +1,16 @@
 # Azure Database particulars
 
-databases:
-    -   databaseName: "[DatabaseName1]"
-        connectionString: "[JDBCConnectionString1]"
-    -   databaseName: "[DatabaseName1]"
-        connectionString: "[JDBCConnectionString2]"
+databaseServers:
+    -   serverName: "gkbzse0m18"
+        databasePort: "1433"
+        databaseNames: [AppdTest, AppdTest2]
+        adminUser: ""
+        adminPassword: ""
+    -   serverName: "hd57z9kvth"
+        databasePort: "1433"
+        databaseNames: [TestDb2]
+        adminUser: ""
+        adminPassword: ""
 
 #prefix used to show up metrics in AppDynamics
 metricPrefix: "Custom Metrics|Azure Database|"

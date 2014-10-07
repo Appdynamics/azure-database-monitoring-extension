@@ -1,5 +1,5 @@
 <monitor>
-        <name>AzureServiceBusMonitor</name>
+        <name>AzureDatabaseMonitor</name>
         <type>managed</type>
         <description>Windows Azure Database Monitor</description>
         <monitor-configuration></monitor-configuration>
