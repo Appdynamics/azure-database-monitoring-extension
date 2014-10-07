@@ -86,7 +86,7 @@ Always feel free to fork and contribute any changes directly here on GitHub.
 
 ##Community
 
-Find out more in the [AppSphere]() community.
+Find out more in the [AppSphere](http://community.appdynamics.com/t5/eXchange-Community-AppDynamics/Windows-Azure-Database-Monitoring-Extension/idi-p/10811) community.
 
 ##Support
 
